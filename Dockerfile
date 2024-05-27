@@ -11,7 +11,7 @@ WORKDIR /go/src/github.com/prongbang/coolify-go
 COPY . .
 
 # Using go mod with go 1.11
-RUN go mod download
+RUN go mod vendor
 
 # With go ≥ 1.10
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/app cmd/app/main.go
