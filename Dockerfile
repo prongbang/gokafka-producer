@@ -11,10 +11,10 @@ WORKDIR /go/src/github.com/prongbang/gokafka-producer
 COPY . .
 
 # Using go mod with go 1.11
-RUN go mod vendor
+RUN go mod tidy
 
 # With go ≥ 1.10
-RUN go build -o /go/bin/app cmd/app/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/app cmd/app/main.go
 
 # small image
 FROM alpine:3.7
