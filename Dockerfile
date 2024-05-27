@@ -6,8 +6,8 @@ ENV GO111MODULE=on
 # install git.
 RUN apk update && apk add --no-cache git
 
-RUN mkdir -p /go/src/github.com/prongbang/coolify-go
-WORKDIR /go/src/github.com/prongbang/coolify-go
+RUN mkdir -p /go/src/github.com/prongbang/gokafka-producer
+WORKDIR /go/src/github.com/prongbang/gokafka-producer
 COPY . .
 
 # Using go mod with go 1.11
