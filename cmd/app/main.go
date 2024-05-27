@@ -6,32 +6,26 @@ import (
 	"os"
 	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/IBM/sarama"
 )
 
 func main() {
-	// Create a new Kafka producer instance
+	// Kafka producer configuration
 	server := os.Getenv("KAFKA_SERVER")
 	fmt.Println("KAFKA_SERVER:", server)
-	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": server,
-	})
+
+	// Create a new Kafka producer configuration
+	config := sarama.NewConfig()
+	config.Producer.Return.Successes = true // Enable delivery report for successful messages
+
+	// Create a new Kafka producer instance
+	producer, err := sarama.NewSyncProducer([]string{server}, config)
 	if err != nil {
 		log.Fatalf("Failed to create Kafka producer: %s", err)
 	}
-	defer p.Close()
-
-	// Delivery report handler for produced messages
-	go func() {
-		for e := range p.Events() {
-			switch ev := e.(type) {
-			case *kafka.Message:
-				if ev.TopicPartition.Error != nil {
-					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition.Topic)
-				} else {
-					fmt.Printf("Delivered message to %v\n", ev.TopicPartition.Topic)
-				}
-			}
+	defer func() {
+		if err := producer.Close(); err != nil {
+			log.Printf("Failed to close Kafka producer: %s", err)
 		}
 	}()
 
@@ -47,12 +41,17 @@ func main() {
 		select {
 		case <-ticker.C:
 			// Send the message to Kafka
-			err = p.Produce(&kafka.Message{
-				TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-				Value:          []byte(message),
-			}, nil)
+			msgBytes := []byte(message)
+			msg := &sarama.ProducerMessage{
+				Topic: topic,
+				Value: sarama.ByteEncoder(msgBytes),
+			}
+
+			partition, offset, err := producer.SendMessage(msg)
 			if err != nil {
 				log.Printf("Failed to produce message: %v", err)
+			} else {
+				fmt.Printf("Message delivered to partition %d at offset %d\n", partition, offset)
 			}
 		}
 	}
