@@ -14,7 +14,7 @@ COPY . .
 RUN go mod vendor
 
 # With go ≥ 1.10
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/app cmd/app/main.go
+RUN go build -o /go/bin/app cmd/app/main.go
 
 # small image
 FROM alpine:3.7
