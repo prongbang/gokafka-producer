@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	// Kafka producer configuration
+	// Kafka producer configuration :9093
 	server := os.Getenv("KAFKA_SERVER")
 	fmt.Println("KAFKA_SERVER:", server)
 
